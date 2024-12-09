@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi-step Form</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h2 class="text-center">Questionario de satisfação</h2>
+      <form id="multiStepForm">
+        <!-- Step Progress -->
+        <% if (sessoes) { %>
+            <ul class="nav nav-pills mb-4 justify-content-center" id="steps">
+                <% sessoes.forEach(function(sessao,index){ %>
+              <li class="nav-item">
+                <button
+                  class="nav-link <%= (index == 0)?'active':'Inactive' %>"
+                  data-bs-toggle="pill"
+                  data-bs-target="#step<%- index %>"
+                >
+                      <%- sessao.title %>
+                </button>
+              </li>
+              <% }); %>
+            </ul>
+          <% } %>
+        <!-- id da sessão será o id dos steps -->
+        <!-- Step Content -->
+        <% if (sessoes) { %>
+            <div class="tab-content">
+                <!-- Step 1 -->
+                <% sessoes.forEach(function(sessao,indexSessao,arr){ %>
+                    <div  class="tab-pane fade show <%= (indexSessao == 0)?'active':'Inactive' %>" id="step<%-indexSessao%>">
+                        <% sessao.perguntas.forEach(function(pergunta,index){ %>
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5><%- index + 1%> <%- pergunta.title %> </h5>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="<%- pergunta.id %>" value="1" id="<%- pergunta.id%>">
+                                        <label class="form-check-label" for="<%- pergunta.id%>">
+                                          Ruim
+                                        </label>
+                                      </div>
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="<%- pergunta.id %>" value="2" id="<%- pergunta.id%>">
+                                        <label class="form-check-label" for="<%- pergunta.id%>">
+                                          Neutro
+                                        </label>
+                                      </div>
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="<%- pergunta.id %>" value="3" id="<%- pergunta.id%>">
+                                        <label class="form-check-label" for="<%- pergunta.id%>">
+                                          Bom
+                                        </label>
+                                      </div>
+                                      <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="<%- pergunta.id %>" value="3" id="<%- pergunta.id%>">
+                                        <label class="form-check-label" for="<%- pergunta.id%>">
+                                          Otimo
+                                        </label>
+                                      </div>
+                                </div>
+                              </div>
+                            
+                        <% }); %>
+                        
+                                    <% if(indexSessao < arr.length - 1){ %>
+                                        <button type="button" class="btn btn-primary next-step">
+                                            Next
+                                        </button>
+                                    <% }%>
+                                    <% if(indexSessao != 0){%>
+                                        <button type="button" class="btn btn-secondary prev-step">
+                                            Previous
+                                        </button>
+                                    <% }%>
+                                    <% if(indexSessao == arr.length-1){ %>
+                                        <button type="submit" class="btn btn-success">Submit</button>
+                                    <% }%>
+                    </div>
+                        <% }); %>
+                </div>   
+        <% } %>
+      </form>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Multi-step form navigation
+      window.addEventListener('load', function() {
+        document.querySelectorAll('.next-step').forEach((button) => {
+                    console.log(button)
+                    button.addEventListener('click', () => {
+                    const currentTab = document.querySelector('.tab-pane.active');
+                    const nextTab = currentTab.nextElementSibling;
+                    if (nextTab) {
+                        const currentNav = document.querySelector('.nav-link.active');
+                        const nextNav =
+                        currentNav.parentElement.nextElementSibling.querySelector(
+                            '.nav-link'
+                        );
+                        currentNav.classList.remove('active');
+                        nextNav.classList.add('active');
+                        currentTab.classList.remove('show', 'active');
+                        nextTab.classList.add('show', 'active');
+                    }
+                    });
+                });
+            document.querySelectorAll('.prev-step').forEach((button) => {
+                    button.addEventListener('click', () => {
+                    const currentTab = document.querySelector('.tab-pane.active');
+                    const prevTab = currentTab.previousElementSibling;
+                    if (prevTab) {
+                        const currentNav = document.querySelector('.nav-link.active');
+                        const prevNav =
+                        currentNav.parentElement.previousElementSibling.querySelector(
+                            '.nav-link'
+                        );
+                        currentNav.classList.remove('active');
+                        prevNav.classList.add('active');
+                        currentTab.classList.remove('show', 'active');
+                        prevTab.classList.add('show', 'active');
+                    }
+                    });
+                });
+    })
+    </script>
+  </body>
+</html>
