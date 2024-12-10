@@ -1,4 +1,4 @@
-import express, { query } from 'express';
+import express from 'express';
 import { createServer } from 'http';
 import db from './database.js';
 import path from 'path';
@@ -16,28 +16,100 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 
+app.post('/admin/add/sessao',async (req,res)=>{
+    const { title } = req.body
+    const query = `
+        insert into sessao (title) values (?)
+    `
+    const sessao = await db.run(query,[title],error=>{
+        if(error){
+            console.log('Error na query')
+        }
+    })
+    if(sessao){
+        return res.json({sessao:title});
+    }
+
+    return res.json({error:'algo aconteceu'})
+    
+}) 
+
+app.put('/admin/edit/sessao/:id',async(req,res)=>{
+    const { title } = req.body
+    const { id } = req.params
+    const query = `
+        UPDATE sessao SET title = ? WHERE id = ?
+    `
+    const sessao = await db.run(query,[title,id],error=>{
+        if(error){
+            console.log('Error na query')
+        }
+    })
+    if(sessao){
+        return res.json({sessao:title});
+    }
+
+    return res.json({error:'algo aconteceu'})
+})
+
+app.post('/admin/add/perguntas',async (req,res)=>{
+    const { texto,sessao_id } = req.body
+    const query = `
+        insert into pergunta (texto,sessao_id) values (?,?)
+    `
+    const pergunta = await db.run(query,[texto,sessao_id],error=>{
+        if(error){
+            console.log('Error na query')
+        }
+    })
+    if(pergunta){
+        console.log(pergunta)
+        // return res.json({pergunta:pergunta.texto});
+    }
+
+    return res.json({error:'algo aconteceu'})
+})
+
+app.put('/admin/edit/perguntas',async(req,res)=>{
+    const { texto } = req.body
+    const { id } = req.params
+    const query = `
+        UPDATE pergunta SET texto = ? WHERE id = ?
+    `
+    const pergunta = await db.run(query,[texto,id],error=>{
+        if(error){
+            console.log('Error na query')
+        }
+    })
+    if(pergunta){
+        return res.json({pergunta:texto});
+    }
+
+    return res.json({error:'algo aconteceu'})
+})
+
 app.get('/', async (req, res) => {
     const query = `
-        select * from sessao
+        SELECT 
+            sessao.title AS title,
+            pergunta.texto AS perguntas
+        FROM 
+            sessao 
+        LEFT JOIN 
+            pergunta 
+        ON 
+            sessao.id = pergunta.sessao_id
     `
-    const all = await db.run(query,[],err=>{
-        if(err){
-            console.log('Error na query')
+    await db.all(query,[],(error,sessoes)=>{
+        if(error){
+            return console.log('Error na query')
         }
+        // console.log(sessoes)
+        res.render('index',{sessoes})
     })
-    console.log(all)
-    //res.render('index',{sessoes})
+    
   });
-app.post('/admin/add/sessao',async (req,res)=>{
-    const query = `
-        insert into sessao ()
-    `
-    const sessao = await db.run(query,[],error=>{
-        if(err){
-            console.log('Error na query')
-        }
-    })
-})  
+ 
 
 // Inicia o servidor
 server.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));

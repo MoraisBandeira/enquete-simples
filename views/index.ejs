@@ -37,7 +37,8 @@
                 <!-- Step 1 -->
                 <% sessoes.forEach(function(sessao,indexSessao,arr){ %>
                     <div  class="tab-pane fade show <%= (indexSessao == 0)?'active':'Inactive' %>" id="step<%-indexSessao%>">
-                        <% sessao.perguntas.forEach(function(pergunta,index){ %>
+
+                        <% sessao.perguntas?.forEach(function(pergunta,index){ %>
                             <div class="card">
                                 <div class="card-body">
                                     <h5><%- index + 1%> <%- pergunta.title %> </h5>
