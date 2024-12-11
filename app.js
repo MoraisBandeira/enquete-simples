@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import db from './database.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +14,7 @@ const server = createServer(app);
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 
@@ -88,27 +90,64 @@ app.put('/admin/edit/perguntas',async(req,res)=>{
     return res.json({error:'algo aconteceu'})
 })
 
+app.get('/admin/get/sessao',async(req,res)=>{
+    const query = `
+    SELECT
+         sessao.title AS title
+     FROM
+         sessao
+ `
+ await db.all(query,[],(error,result)=>{
+     if(error){
+         return console.log('Error na query')
+     }
+      return result
+ })
+})
+
 app.get('/', async (req, res) => {
     const query = `
-        SELECT 
+       SELECT
             sessao.title AS title,
-            pergunta.texto AS perguntas
-        FROM 
-            sessao 
-        LEFT JOIN 
-            pergunta 
-        ON 
+            sessao.id AS id,
+            GROUP_CONCAT(pergunta.texto || '|' || pergunta.id) AS perguntas_raw
+        FROM
+            sessao
+        LEFT JOIN
+            pergunta
+        ON
             sessao.id = pergunta.sessao_id
+        GROUP BY
+            sessao.id
     `
-    await db.all(query,[],(error,sessoes)=>{
+    await db.all(query,[],(error,result)=>{
         if(error){
             return console.log('Error na query')
         }
-        // console.log(sessoes)
+
+    const sessoes = result.map(row => ({
+        title: row.title,
+        id: row.id,
+        perguntas: row.perguntas_raw
+            ? row.perguntas_raw.split(',').map(item => {
+                const [texto, id] = item.split('|');
+                return { texto: texto, id: Number(id) };
+            })
+            : []
+        }));
+        
+        // console.log(result)
+
         res.render('index',{sessoes})
     })
     
   });
+
+app.get('/admin',async (req,res)=>{
+    
+    res.render('admin')
+
+})  
  
 
 // Inicia o servidor
